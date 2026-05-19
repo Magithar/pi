@@ -1,0 +1,31 @@
+packages:
+  - "packages/*"
+  - "packages/web-ui/example"
+  - "packages/coding-agent/examples/extensions/*"
+
+# packages/web-ui pulls the SheetJS build of `xlsx` from the vendor CDN as an
+# off-registry tarball. Because pi-web-ui is itself a workspace dependency of
+# other workspace projects, `xlsx` appears as a transitive (subdep) URL
+# dependency, which pnpm >=10.4 blocks by default (ERR_PNPM_EXOTIC_SUBDEP).
+# The repo predates that guard; opt back out instead of downgrading pnpm.
+# (pnpm 11 reads this setting from pnpm-workspace.yaml, not .npmrc.)
+blockExoticSubdeps: false
+
+# This repo is architecturally an npm-workspaces project (package-lock.json,
+# npm `overrides`, `npm run --workspaces` scripts) and relies on npm's flat
+# node_modules — several packages import transitive deps they don't declare
+# (e.g. packages/ai uses @smithy/* via @aws-sdk). Use pnpm's hoisted linker so
+# the layout matches npm and phantom deps resolve, without rewriting manifests.
+nodeLinker: hoisted
+
+# pnpm >=10 blocks dependency build/postinstall scripts unless allowlisted.
+# These are the repo's known native/codegen deps (esbuild fetches its platform
+# binary, koffi/canvas/@parcel/watcher build native addons); they must run for
+# `pnpm dev` and the build to work.
+allowBuilds:
+  '@google/genai': true
+  '@parcel/watcher': true
+  canvas: true
+  esbuild: true
+  koffi: true
+  protobufjs: true

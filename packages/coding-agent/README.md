@@ -204,7 +204,7 @@ See `/hotkeys` for the full list. Customize via `~/.pi/agent/keybindings.json`. 
 | Ctrl+C twice | Quit |
 | Escape | Cancel/abort |
 | Escape twice | Open `/tree` |
-| Ctrl+L | Open model selector |
+| Ctrl+L | Open model selector (type to search; `Tab` toggles all/scoped; `f` toggles free-only) |
 | Ctrl+P / Shift+Ctrl+P | Cycle scoped models forward/backward |
 | Shift+Tab | Cycle thinking level |
 | Ctrl+O | Collapse/expand tool output |

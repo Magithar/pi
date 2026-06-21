@@ -555,6 +555,8 @@ ModelSelector.open(currentModel, (selectedModel) => {
 });
 ```
 
+Filter pills let users narrow the list by capability: **Thinking** (reasoning models), **Vision** (image input), and **Free** (zero-cost models).
+
 ## Styling
 
 Import the pre-built CSS:

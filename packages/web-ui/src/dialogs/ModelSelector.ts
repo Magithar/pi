@@ -7,7 +7,7 @@ import { DialogBase } from "@mariozechner/mini-lit/dist/DialogBase.js";
 import { html, type PropertyValues, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { createRef, ref } from "lit/directives/ref.js";
-import { Brain, Image as ImageIcon } from "lucide";
+import { Brain, CircleDollarSign, Image as ImageIcon } from "lucide";
 import { Input } from "../components/Input.js";
 import { getAppStorage } from "../storage/app-storage.js";
 import type { AutoDiscoveryProviderType } from "../storage/stores/custom-providers-store.js";
@@ -52,6 +52,7 @@ export class ModelSelector extends DialogBase {
 	@state() searchQuery = "";
 	@state() filterThinking = false;
 	@state() filterVision = false;
+	@state() filterFree = false;
 	@state() customProvidersLoading = false;
 	@state() selectedIndex = 0;
 	@state() private navigationMode: "mouse" | "keyboard" = "mouse";
@@ -248,6 +249,9 @@ export class ModelSelector extends DialogBase {
 		if (this.filterVision) {
 			filteredModels = filteredModels.filter(({ model }) => model.input.includes("image"));
 		}
+		if (this.filterFree) {
+			filteredModels = filteredModels.filter(({ model }) => model.cost.input === 0 && model.cost.output === 0);
+		}
 
 		// Sort: when not searching, current model first then by provider.
 		// When searching, preserve the score-based order from above,
@@ -323,6 +327,19 @@ export class ModelSelector extends DialogBase {
 						},
 						className: "rounded-full",
 						children: html`<span class="inline-flex items-center gap-1">${icon(ImageIcon, "sm")} ${i18n("Vision")}</span>`,
+					})}
+					${Button({
+						variant: this.filterFree ? "default" : "secondary",
+						size: "sm",
+						onClick: () => {
+							this.filterFree = !this.filterFree;
+							this.selectedIndex = 0;
+							if (this.scrollContainerRef.value) {
+								this.scrollContainerRef.value.scrollTop = 0;
+							}
+						},
+						className: "rounded-full",
+						children: html`<span class="inline-flex items-center gap-1">${icon(CircleDollarSign, "sm")} ${i18n("Free")}</span>`,
 					})}
 				</div>
 			</div>

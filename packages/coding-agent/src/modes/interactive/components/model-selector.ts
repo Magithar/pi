@@ -5,6 +5,7 @@ import {
 	fuzzyFilter,
 	getKeybindings,
 	Input,
+	matchesKey,
 	Spacer,
 	Text,
 	type TUI,
@@ -60,6 +61,8 @@ export class ModelSelectorComponent extends Container implements Focusable {
 	private scope: ModelScope = "all";
 	private scopeText?: Text;
 	private scopeHintText?: Text;
+	private filterFree = false;
+	private filterFreeText?: Text;
 
 	constructor(
 		tui: TUI,
@@ -96,6 +99,8 @@ export class ModelSelectorComponent extends Container implements Focusable {
 			const hintText = "Only showing models from configured providers. Use /login to add providers.";
 			this.addChild(new Text(theme.fg("warning", hintText), 0, 0));
 		}
+		this.filterFreeText = new Text(this.getFreeFilterText(), 0, 0);
+		this.addChild(this.filterFreeText);
 		this.addChild(new Spacer(1));
 
 		// Create search input
@@ -203,6 +208,11 @@ export class ModelSelectorComponent extends Container implements Focusable {
 		return keyHint("tui.input.tab", "scope") + theme.fg("muted", " (all/scoped)");
 	}
 
+	private getFreeFilterText(): string {
+		const label = this.filterFree ? theme.fg("accent", "free only") : theme.fg("muted", "all costs");
+		return theme.fg("muted", "f: ") + label;
+	}
+
 	private setScope(scope: ModelScope): void {
 		if (this.scope === scope) return;
 		this.scope = scope;
@@ -216,13 +226,17 @@ export class ModelSelectorComponent extends Container implements Focusable {
 	}
 
 	private filterModels(query: string): void {
-		this.filteredModels = query
+		let models = query
 			? fuzzyFilter(
 					this.activeModels,
 					query,
 					({ id, provider }) => `${id} ${provider} ${provider}/${id} ${provider} ${id}`,
 				)
 			: this.activeModels;
+		if (this.filterFree) {
+			models = models.filter(({ model }) => model.cost.input === 0 && model.cost.output === 0);
+		}
+		this.filteredModels = models;
 		this.selectedIndex = Math.min(this.selectedIndex, Math.max(0, this.filteredModels.length - 1));
 		this.updateList();
 	}
@@ -294,6 +308,12 @@ export class ModelSelectorComponent extends Container implements Focusable {
 					this.scopeHintText.setText(this.getScopeHintText());
 				}
 			}
+			return;
+		}
+		if (matchesKey(keyData, "f")) {
+			this.filterFree = !this.filterFree;
+			this.filterFreeText?.setText(this.getFreeFilterText());
+			this.filterModels(this.searchInput.getValue());
 			return;
 		}
 		// Up arrow - wrap to bottom when at top
